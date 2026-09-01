@@ -17,6 +17,7 @@ The Markdown is usable by any other wiki, RAG pipeline, or note system.
 - Spotify show resolution through the matching public podcast RSS feed.
 - Direct RSS/Atom podcast feeds.
 - YouTube channels, playlists, and individual videos through `yt-dlp`.
+- Approximate upload dates for flat YouTube playlists, enabling date-range selection without downloading every video first.
 - Local transcription with OpenAI Whisper.
 - One Markdown file per episode with title, publication date, description, source metadata, and timestamped transcript.
 - Inclusive date ranges, title matching, newest/oldest ordering, and safe one-episode default.

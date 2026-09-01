@@ -105,6 +105,7 @@ export function resolveYouTube(url, { runCommand = execFileSync } = {}) {
   const output = runCommand('yt-dlp', [
     '--js-runtimes', `node:${process.execPath}`,
     '--flat-playlist',
+    '--extractor-args', 'youtubetab:approximate_date',
     '--dump-single-json',
     '--no-warnings',
     url,

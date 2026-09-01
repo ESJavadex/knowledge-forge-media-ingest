@@ -67,6 +67,7 @@ test('normalizes a YouTube playlist from yt-dlp JSON', () => {
     runCommand(command, args) {
       assert.equal(command, 'yt-dlp');
       assert.ok(args.includes('--flat-playlist'));
+      assert.ok(args.includes('youtubetab:approximate_date'));
       return JSON.stringify({
         title: 'AI Podcast',
         channel: 'Example Channel',
