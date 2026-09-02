@@ -18,7 +18,7 @@ The Markdown is usable by any other wiki, RAG pipeline, or note system.
 - Direct RSS/Atom podcast feeds.
 - YouTube channels, playlists, and individual videos through `yt-dlp`.
 - Approximate upload dates for flat YouTube playlists, enabling date-range selection without downloading every video first.
-- Local transcription with OpenAI Whisper.
+- Local transcription with faster-whisper by default, with OpenAI Whisper as a fallback engine.
 - One Markdown file per episode with title, publication date, description, source metadata, and timestamped transcript.
 - Inclusive date ranges, title matching, newest/oldest ordering, and safe one-episode default.
 - Incremental manifest: completed episodes are skipped and failed work can resume.
@@ -29,13 +29,14 @@ The Markdown is usable by any other wiki, RAG pipeline, or note system.
 
 - Node.js 20+
 - FFmpeg
-- [`openai-whisper`](https://github.com/openai/whisper)
+- Python 3.10+ with [`faster-whisper`](https://github.com/SYSTRAN/faster-whisper) (recommended) or [`openai-whisper`](https://github.com/openai/whisper)
 - [`yt-dlp`](https://github.com/yt-dlp/yt-dlp) for YouTube
 
 ```bash
 sudo apt install ffmpeg
-pip install openai-whisper
 uv tool install yt-dlp
+python3 -m venv .venv-fw
+.venv-fw/bin/pip install -r requirements-faster-whisper.txt
 ```
 
 Keep `yt-dlp` current because YouTube changes frequently.
@@ -64,6 +65,15 @@ Create Markdown for the latest three episodes:
 ```bash
 media-ingest "https://open.spotify.com/show/SHOW_ID" --latest 3
 ```
+
+The default engine is `faster-whisper` with `large-v3-turbo`, Spanish, CPU `int8`, four threads, and batched inference. To use the original OpenAI implementation instead:
+
+```bash
+pip install openai-whisper
+media-ingest "URL" --engine whisper --model turbo --language es
+```
+
+If the faster-whisper environment lives elsewhere, set `FASTER_WHISPER_PYTHON` to its Python executable.
 
 Filter by inclusive publication dates:
 

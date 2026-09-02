@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { execFileSync } from 'child_process';
 import { runMediaIngest } from './pipeline.js';
+import { transcribeWithFasterWhisper, transcribeWithWhisper } from './transcriber.js';
 
 const args = process.argv.slice(2);
 if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
@@ -27,6 +28,8 @@ try {
     : knowledgeForgeRoot
       ? path.join(knowledgeForgeRoot, 'raw', 'media')
       : path.resolve('output');
+  const engine = optionValue('--engine', 'faster-whisper');
+  const model = optionValue('--model', engine === 'faster-whisper' ? 'large-v3-turbo' : 'turbo');
 
   const onMarkdown = knowledgeForgeRoot
     ? async (markdownPath) => {
@@ -47,14 +50,18 @@ try {
     oldestFirst: args.includes('--oldest-first'),
     dryRun: args.includes('--dry-run') || args.includes('--list'),
     downloadOnly: args.includes('--download-only'),
-    model: optionValue('--model', 'turbo'),
+    model,
     language: optionValue('--language', 'es'),
+    engine,
     deleteAudio: args.includes('--delete-audio'),
     force: args.includes('--force'),
     cacheRoot: path.resolve(optionValue('--cache', '.media-cache')),
     outputRoot,
     integrationKey: knowledgeForgeRoot ? `knowledge-forge:${knowledgeForgeRoot}` : null,
     onMarkdown,
+    transcribeFn: engine === 'whisper'
+      ? transcribeWithWhisper
+      : transcribeWithFasterWhisper,
   });
   console.log(`\n✅ Processed ${result.processed.length}; skipped ${result.skipped.length}; failed ${result.failures.length}.\n`);
   if (result.failures.length > 0) process.exitCode = 1;
@@ -120,7 +127,8 @@ Output and integration:
   --knowledge-forge PATH Write to PATH/raw/media and ingest each Markdown file
 
 Transcription:
-  --model MODEL          Whisper model (default: turbo)
+  --model MODEL          Model (default: large-v3-turbo; turbo with --engine whisper)
+  --engine ENGINE        Transcription engine: faster-whisper (default) or whisper
   --language CODE        Language code (default: es; use auto to detect)
   --download-only        Cache audio without transcribing
   --delete-audio         Delete audio after successful transcription
