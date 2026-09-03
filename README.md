@@ -102,6 +102,28 @@ media-ingest "https://open.spotify.com/show/SHOW_ID" \
 Knowledge Forge remains unaware of Spotify, YouTube, Whisper, or media caches.
 The adapter adds `/raw/media/` to that checkout's local `.git/info/exclude`, so generated transcripts are not accidentally committed and no media-specific ignore rule is added to Knowledge Forge itself.
 
+### Finalizing a large batch
+
+For a long-running transcription pool, the optional finalizer waits for active
+`transcribe_fw.py` workers and then performs the remaining work in order:
+
+1. selects one canonical Markdown per source URL (the most complete copy wins);
+2. runs incremental rich ingestion with `zai/glm-5.3-flash` by default;
+3. updates and embeds the QMD collection;
+4. enables the local QMD service;
+5. runs two retrieval checks and generates four per-podcast syntheses plus one
+   cross-podcast synthesis through Knowledge Forge's HTTP API.
+
+```bash
+KNOWLEDGE_FORGE_ROOT=/path/to/knowledge-forge \
+MEDIA_INGEST_JOB_ROOT=/path/to/job-state \
+QMD_BIN=/path/to/qmd \
+scripts/finalize-rich-after-transcription.sh
+```
+
+The source Markdown is never deleted. Duplicate candidates are only excluded
+from compilation and are recorded as `DUPLICATE_SKIPPED` in the ingestion log.
+
 ## Output
 
 Without an integration, files are written to `output/<show>/`. Each episode looks like:
